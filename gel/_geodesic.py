@@ -62,8 +62,6 @@ def geodesic_expansion(labels, image, mode='viscosity', connectivity=1):
     initial_labels = labels[label_locations]
     distance_heap = [(0, coord, label) for coord, label in 
          zip(np.transpose(label_locations), initial_labels)]
-    distance_array = np.inf * np.ones(labels.shape, float)
-    distance_array[label_locations] = 0
     if mode == 'viscosity':
         def dist(img, src, dst): return img[dst]
     else:
@@ -74,7 +72,6 @@ def geodesic_expansion(labels, image, mode='viscosity', connectivity=1):
         d, loc, lab = nearest
         if labels_out[loc] == 0:
             labels_out[loc] = lab
-            distance_array[loc] = d
             for n in neighbors(loc, labels_out.shape, connectivity):
                 if labels_out[n] == 0:
                     next_d = d + dist(image, loc, n)
