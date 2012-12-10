@@ -78,5 +78,5 @@ def geodesic_expansion(labels, image, mode='viscosity', connectivity=1):
             for n in neighbors(loc, labels_out.shape, connectivity):
                 if labels_out[n] == 0:
                     next_d = d + dist(image, loc, n)
-                    heapq.heappush((next_d, n, lab))
-    return labels
+                    heapq.heappush(distance_heap, (next_d, n, lab))
+    return labels_out
