@@ -1,4 +1,5 @@
 import heapq
+import itertools as it
 
 import numpy as np
 import scipy.ndimage as nd
@@ -45,7 +46,7 @@ def gel(image, num_superpixels, use_channels=False, num_iter=20,
         if i > 0 and centers_old == centers_new:
             break
         centers_old = centers_new
-        centers = volume_of_labels(centers_new)
+        centers = volume_of_labels(centers_new, image.shape)
     return superpixels
 
 
@@ -152,8 +153,10 @@ def geodesic_expansion(labels, image, mode='viscosity', connectivity=1):
     """
     label_locations = labels.nonzero()
     initial_labels = labels[label_locations]
-    distance_heap = [(0, coord, label) for coord, label in 
-         zip(np.transpose(label_locations), initial_labels)]
+    timer = it.count()
+    distance_heap = [(0, time_added, coord, label)
+                    for time_added, coord, label in 
+                    zip(timer, np.transpose(label_locations), initial_labels)]
     if mode == 'viscosity':
         def dist(img, src, dst): return img[dst]
     else:
@@ -161,11 +164,12 @@ def geodesic_expansion(labels, image, mode='viscosity', connectivity=1):
     labels_out = np.zeros_like(labels)
     while len(distance_heap) > 0:
         nearest = heapq.heappop(distance_heap)
-        d, loc, lab = nearest
-        if labels_out[loc] == 0:
-            labels_out[loc] = lab
+        d, t, loc, lab = nearest
+        if labels_out[tuple(loc)] == 0:
+            labels_out[tuple(loc)] = lab
             for n in neighbors(loc, labels_out.shape, connectivity):
-                if labels_out[n] == 0:
-                    next_d = d + dist(image, loc, n)
-                    heapq.heappush(distance_heap, (next_d, n, lab))
+                if labels_out[tuple(n)] == 0:
+                    next_d = d + dist(image, tuple(loc), tuple(n))
+                    heapq.heappush(distance_heap, 
+                                   (next_d, timer.next(), n, lab))
     return labels_out
