@@ -66,8 +66,8 @@ def volume_of_labels(centers, shape):
     """
     volume = np.zeros(shape, int)
     for i, center in enumerate(centers):
-        center = [int(np.floor(coord)) for coord in center]
-        volume[center] = i+1
+        center = [int(np.round(coord)) for coord in center]
+        volume[tuple(center)] = i+1
     return volume
 
 def label_centers_of_mass(labels, uniques=None):
